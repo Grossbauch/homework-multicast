@@ -5,7 +5,7 @@
 
 ```shell
 openssl enc -d -aes-256-cbc -pbkdf2 -in solution/solution.diff.enc -out solution/solution.diff
-git applu solution/solution.diff
+git apply solution/solution.diff
 ```
 
 [^1]: Подсказка для преподавателя: `gopass show cppdevcourse/homeworks/multicast`

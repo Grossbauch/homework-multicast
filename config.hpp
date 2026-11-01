@@ -1,3 +1,5 @@
+#pragma once
+
 #include <filesystem>
 #include <string_view>
 #include <vector>
@@ -32,7 +34,7 @@ public:
     const SerialEntries& GetSerialEntries() const;
 
 private:
-    UdpEntries udpEnties_;
+    UdpEntries udpEntries_;
     SerialEntries serialEntries_;
 };
 

@@ -1,3 +1,5 @@
+#include <cerrno>
+#include <cstddef>
 #include <stdexcept>
 #include <string_view>
 
@@ -24,13 +26,13 @@ Device::Device(std::string_view path)
     if (tcgetattr(fd_, &tty) != 0)
     {
         close(fd_);
-        std::runtime_error("tcgetattr failed");
+        throw std::runtime_error("tcgetattr failed");
     }
 
     if (cfsetospeed(&tty, B9600) != 0)
     {
         close(fd_);
-        std::runtime_error("cfsetospeed failed");
+        throw std::runtime_error("cfsetospeed failed");
     }
     tty.c_cflag = (tty.c_cflag & ~CSIZE) | CS8;
     tty.c_cflag |= CLOCAL | CREAD;
@@ -43,8 +45,13 @@ Device::Device(std::string_view path)
     if (tcsetattr(fd_, TCSANOW, &tty) != 0)
     {
         close(fd_);
-        std::runtime_error("tcsetattr failed");
+        throw std::runtime_error("tcsetattr failed");
     }
+}
+
+Device::~Device() noexcept
+{
+    close(fd_);
 }
 
 int Device::Handler() const noexcept
@@ -54,7 +61,26 @@ int Device::Handler() const noexcept
 
 bool send(const Device& device, std::string_view message)
 {
-    return write(device.Handler(), message.data(), message.size()) >= 0;
+    const auto* data = message.data();
+    std::size_t remaining = message.size();
+
+    while (remaining > 0)
+    {
+        const ssize_t written = write(device.Handler(), data, remaining);
+        if (written < 0)
+        {
+            if (errno != EINTR)
+            {
+                return false;
+            }
+            continue;
+        }
+
+        data += written;
+        remaining -= static_cast<std::size_t>(written);
+    }
+
+    return true;
 }
 
 } // namespace serial

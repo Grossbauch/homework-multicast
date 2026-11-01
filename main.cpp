@@ -1,3 +1,4 @@
+#include <cstdlib>
 #include <iostream>
 
 #include "config.hpp"
@@ -20,12 +21,6 @@ void print_prompt()
 
 int main(int argc, char* argv[])
 {
-    if (argc == 0)
-    {
-        std::cerr << "argc is zero\n";
-        return EXIT_FAILURE;
-    }
-
     if (argc == 2 && std::string_view(argv[1]) == "-h")
     {
         print_usage(argv[0]);

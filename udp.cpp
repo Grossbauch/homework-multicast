@@ -1,9 +1,7 @@
-#include <cstring>
 #include <stdexcept>
 #include <string_view>
 
 #include <netinet/in.h>
-#include <arpa/inet.h>
 #include <sys/socket.h>
 #include <unistd.h>
 
@@ -36,13 +34,9 @@ Socket::~Socket() noexcept
 bool send(const Socket& socket, const sockaddr_in& address,
     std::string_view message)
 {
-    sockaddr addr{};
-
-    static_assert(sizeof(addr) == sizeof(address));
-    std::memcpy(&addr, &address, sizeof(addr));
-
-    const ssize_t sent = sendto(socket.Handler(), message.data(),
-        message.size(), 0, &addr, sizeof(addr));
+    const ssize_t sent =
+        sendto(socket.Handler(), message.data(), message.size(), 0,
+            reinterpret_cast<const sockaddr*>(&address), sizeof(address));
 
     return sent >= 0;
 }
